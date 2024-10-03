@@ -28,7 +28,7 @@ session_start();
             margin-bottom: 20px;
         }
 
-        button, input[type="button"], input[type="text"] {
+        button, input[type="button"] {
             padding: 10px 15px;
             margin: 10px;
             border: none;
@@ -38,7 +38,7 @@ session_start();
             border-radius: 5px;
         }
 
-        button:hover, input[type="button"]:hover, input[type="text"]:hover {
+        button:hover, input[type="button"]:hover {
             background-color: #2980b9;
         }
 
@@ -58,16 +58,6 @@ session_start();
 
         .file-controls {
             margin: 20px 0;
-        }
-
-        .active-button {
-            background-color: #2ecc71 !important; /* Change to a different color when active */
-        }
-
-        .output-container {
-            margin-top: 20px;
-            font-weight: bold;
-            font-size: 18px;
         }
     </style>
 </head>
@@ -99,33 +89,12 @@ session_start();
             <button onclick="toggleGateType('DEC')">Toggle Decryption Chip</button>
             <button onclick="toggleGateType('Clock')">Toggle Clock</button>
             <button onclick="toggleGateType('IO')">Toggle IO</button>
-            <button onclick="toggleGateType('ALU')">Toggle ALU</button>
-            <button onclick="toggleGateType('MUX')">Toggle MUX</button>
-            <button onclick="toggleGateType('DEMUX')">Toggle DEMUX</button>
-            <button onclick="toggleGateType('DFlipFlop')">Toggle D Flip-Flop</button>
-            <button onclick="toggleGateType('JKFlipFlop')">Toggle JK Flip-Flop</button>
-            <button onclick="toggleGateType('ShiftRegister')">Toggle Shift Register</button>
-            <button onclick="toggleGateType('Adder')">Toggle Adder</button>
-            <button onclick="toggleGateType('Subtractor')">Toggle Subtractor</button>
-            <button onclick="toggleGateType('RAM')">Toggle RAM</button>
         </div>
     </div>
     <div class="file-controls">
         <button onclick="saveCircuit()">Save Circuit</button>
         <input type="file" id="fileInput" accept=".json" onchange="loadCircuit(event)" />
     </div>
-
-    <!-- Input fields for user message and encrypted message -->
-    <h1>Logic Gate Encryption & Decryption Simulation</h1>
-    <p>Use the logic gate simulation to perform encryption and decryption using XOR gates.</p>
-    <input type="text" id="userInput" placeholder="Enter your message to encrypt" />
-    <button onclick="performEncryption()">Encrypt Message</button>
-    <div id="encryptedOutput" class="output-container"></div>
-
-    <input type="text" id="encryptedInput" placeholder="Enter encrypted binary to decrypt" />
-    <button onclick="performDecryption()">Decrypt Message</button>
-    <div id="decryptedOutput" class="output-container"></div>
-
     <canvas id="circuitCanvas" width="1000" height="800"></canvas>
     <script>
         const canvas = document.getElementById('circuitCanvas');
@@ -140,7 +109,6 @@ session_start();
         let clockInterval = null;
         const psuKeys = {}; // Store PSU-generated keys for encryption and decryption
 
-        // Define the Gate class with new chip functionalities
         class Gate {
             constructor(x, y, type, id = null) {
                 this.id = id !== null ? id : gateIdCounter++;
@@ -159,55 +127,55 @@ session_start();
                 }
             }
 
-            // Update gate logic for all added types
             updateOutput() {
                 switch (this.type) {
-                    case 'AND': this.output = this.input1 && this.input2; break;
-                    case 'OR': this.output = this.input1 || this.input2; break;
-                    case 'NOT': this.output = !this.input1; break;
-                    case 'XOR': this.output = this.input1 !== this.input2; break;
-                    case 'NAND': this.output = !(this.input1 && this.input2); break;
-                    case 'NOR': this.output = !(this.input1 || this.input2); break;
-                    case 'XNOR': this.output = this.input1 === this.input2; break;
-                    case 'BUFFER': this.output = this.input1; break;
-                    case 'INPUT': this.output = this.input1; break;
-                    case 'PSU': this.output = true; break;
-                    case 'ENC': this.output = this.encrypt(this.input1); break;
-                    case 'DEC': this.output = this.decrypt(this.input1); break;
-                    case 'CPU': this.output = this.performCPULogic(); break;
-                    case 'Clock': this.toggleClock(); break;
-                    case 'ALU': this.output = this.performALULogic(); break;
-                    case 'MUX': this.output = this.input1 ? this.input1 : this.input2; break;
-                    case 'DEMUX': this.output = this.input1 && this.input2; break;
-                    case 'DFlipFlop': this.output = this.input1; break;
-                    case 'JKFlipFlop': this.output = this.input1 !== this.input2; break;
-                    case 'ShiftRegister': this.output = this.input1; break;
-                    case 'Adder': this.output = this.addBinary(this.input1, this.input2); break;
-                    case 'Subtractor': this.output = this.subtractBinary(this.input1, this.input2); break;
-                    case 'RAM': this.output = this.input1; break;
+                    case 'AND':
+                        this.output = this.input1 && this.input2;
+                        break;
+                    case 'OR':
+                        this.output = this.input1 || this.input2;
+                        break;
+                    case 'NOT':
+                        this.output = !this.input1;
+                        break;
+                    case 'XOR':
+                        this.output = this.input1 !== this.input2;
+                        break;
+                    case 'NAND':
+                        this.output = !(this.input1 && this.input2);
+                        break;
+                    case 'NOR':
+                        this.output = !(this.input1 || this.input2);
+                        break;
+                    case 'XNOR':
+                        this.output = this.input1 === this.input2;
+                        break;
+                    case 'BUFFER':
+                        this.output = this.input1;
+                        break;
+                    case 'INPUT':
+                        this.output = this.input1;
+                        break;
+                    case 'PSU':
+                        this.output = true;
+                        break;
+                    case 'ENC':
+                        this.output = this.encrypt(this.input1);
+                        break;
+                    case 'DEC':
+                        this.output = this.decrypt(this.input1);
+                        break;
+                    case 'CPU':
+                        this.output = this.performCPULogic();
+                        break;
+                    case 'Clock':
+                        this.toggleClock();
+                        break;
+                    case 'IO':
+                        this.output = this.input1;
+                        break;
                 }
                 this.state = this.output;
-            }
-
-            performALULogic() {
-                return this.input1 && !this.input2;
-            }
-
-            addBinary(a, b) {
-                return a + b; // Placeholder for binary addition logic
-            }
-
-            subtractBinary(a, b) {
-                return a - b; // Placeholder for binary subtraction logic
-            }
-
-            toggleClock() {
-                clearInterval(clockInterval);
-                clockInterval = setInterval(() => {
-                    this.input1 = !this.input1;
-                    this.updateOutput();
-                    renderCircuit();
-                }, 500);
             }
 
             encrypt(input) {
@@ -224,6 +192,19 @@ session_start();
 
             applyXOR(input, key) {
                 return Boolean(input ^ key);
+            }
+
+            performCPULogic() {
+                return this.input1 === this.input2;
+            }
+
+            toggleClock() {
+                clearInterval(clockInterval);
+                clockInterval = setInterval(() => {
+                    this.input1 = !this.input1;
+                    this.updateOutput();
+                    renderCircuit();
+                }, 500);
             }
 
             generateKey() {
@@ -265,7 +246,6 @@ session_start();
             }
         }
 
-        // Wire class for connections between gates
         class Wire {
             constructor(from, to) {
                 this.from = from;
